@@ -2,6 +2,7 @@ import { createServer } from 'node:http'
 import { testInstagram } from './integrations/instagram/index.js'
 import { getInstagramPosts } from './integrations/instagram/posts.js'
 import { testAnalytics } from './integrations/analytics/index.js'
+import { getInstagramAccount } from './integrations/instagram/account.js'
 
 export function createDevServer(enabled: boolean) {
   // ponytail: uma consulta por vez neste teste manual; fila por conta se virar serviço multiusuário.
@@ -20,6 +21,7 @@ export function createDevServer(enabled: boolean) {
       ![
         '/api/dev/instagram/test',
         '/api/dev/instagram/posts',
+        '/api/dev/instagram/account',
         '/api/dev/analytics/test',
       ].includes(req.url ?? '')
     )
@@ -43,9 +45,11 @@ export function createDevServer(enabled: boolean) {
     try {
       const result = await (req.url === '/api/dev/analytics/test'
         ? testAnalytics()
-        : req.url === '/api/dev/instagram/posts'
-          ? getInstagramPosts()
-          : testInstagram())
+        : req.url === '/api/dev/instagram/account'
+          ? getInstagramAccount()
+          : req.url === '/api/dev/instagram/posts'
+            ? getInstagramPosts()
+            : testInstagram())
       send(result.httpStatus, result.body)
     } catch {
       send(

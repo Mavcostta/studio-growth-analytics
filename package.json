@@ -18,9 +18,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "tsc -p tsconfig.test.json && node --test .test-build/tests/analytics.test.js .test-build/tests/instagram-frontend.test.js",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "snapshots:collect": "tsc -p tsconfig.server.json && node .server-build/collect-snapshots.js",
+    "test:phase1": "tsc -p tsconfig.test.json && node --test .test-build/tests/phase1.test.js"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.0",
     "dotenv": "^17.4.2",
     "google-auth-library": "^11.0.2",
     "react": "^19.2.8",

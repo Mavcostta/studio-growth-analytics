@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { GoogleAuth } from 'google-auth-library'
 import { collectDetails } from './details.js'
+import { withoutLocalTraffic } from './filters.js'
 
 const metrics = ['activeUsers', 'sessions', 'screenPageViews', 'eventCount']
 const events = ['whatsapp_click', 'select_service', 'scroll_depth']
@@ -114,7 +115,7 @@ export async function testAnalytics() {
         await client.request({
           url,
           method: 'POST',
-          data,
+          data: withoutLocalTraffic(data),
           timeout: 20_000,
           retry: false,
         })

@@ -11,3 +11,5 @@ tokens/
 .test-build/
 node_modules/
 dist/
+
+.snapshots/

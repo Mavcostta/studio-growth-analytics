@@ -8,3 +8,5 @@ package-lock.json
 credentials
 .env
 .vercel
+
+.snapshots/

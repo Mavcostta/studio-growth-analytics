@@ -145,10 +145,25 @@ export function loadInstagramPosts(): Promise<InstagramAccountSummary> {
       })
     } catch {
       throw new Error(
-        'Backend indisponível ou consulta demorou demais. Verifique o servidor local e tente novamente.',
+        'Backend indisponível ou consulta demorou demais. Tente novamente e verifique se a API está ativa no endereço do dashboard.',
       )
     }
     if (!response.ok) {
+      let kind: unknown
+      try {
+        const payload: unknown = await response.json()
+        kind = record(record(payload).error).kind
+      } catch {
+        /* A plataforma também pode devolver uma página de erro, sem JSON. */
+      }
+      if (kind === 'missing_token')
+        throw new Error(
+          'O backend está sem INSTAGRAM_ACCESS_TOKEN. Configure a variável no ambiente em execução e reinicie o servidor ou faça um novo deploy na Vercel.',
+        )
+      if (response.status === 404)
+        throw new Error(
+          'A rota /api/dev/instagram/posts não foi encontrada. Verifique se o deploy inclui as funções do backend.',
+        )
       if (response.status === 429)
         throw new Error(
           'Consulta em andamento ou limite de consultas atingido. Aguarde antes de tentar novamente.',
@@ -158,7 +173,7 @@ export function loadInstagramPosts(): Promise<InstagramAccountSummary> {
           'A autorização do Instagram precisa ser verificada no backend.',
         )
       throw new Error(
-        'Backend indisponível ou consulta ao Instagram falhou. Verifique o servidor local.',
+        `Backend indisponível ou consulta ao Instagram falhou (HTTP ${response.status}). Verifique os logs da API no ambiente em execução.`,
       )
     }
     let payload: unknown

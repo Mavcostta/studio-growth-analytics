@@ -170,6 +170,25 @@ test('service compartilha requisições em andamento e permite retry sem fallbac
     async () => new Response('', { status: 503 }),
   )
   await assert.rejects(loadInstagramPosts(), /Backend indisponível/)
+  context.mock.method(globalThis, 'fetch', async () =>
+    Response.json(
+      { error: { kind: 'missing_token', message: 'PRIVATE' } },
+      { status: 503 },
+    ),
+  )
+  await assert.rejects(
+    loadInstagramPosts(),
+    (error) =>
+      error instanceof Error &&
+      error.message.includes('INSTAGRAM_ACCESS_TOKEN') &&
+      !error.message.includes('PRIVATE'),
+  )
+  context.mock.method(
+    globalThis,
+    'fetch',
+    async () => new Response('<html>not found</html>', { status: 404 }),
+  )
+  await assert.rejects(loadInstagramPosts(), /rota.*não foi encontrada/)
   context.mock.method(globalThis, 'fetch', async () => {
     throw new Error('network')
   })

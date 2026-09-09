@@ -10,6 +10,7 @@ export default defineConfig({
         '.env.*',
         '**/.git/**',
         '**/credentials/**',
+        '**/.snapshots/**',
         '**/*service-account*.json',
         '**/*service_account*.json',
         '**/*.{crt,pem,key}',

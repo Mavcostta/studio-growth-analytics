@@ -7,7 +7,13 @@
   "functions": {
     "api/**/*.ts": {
       "maxDuration": 240,
-      "excludeFiles": "{credentials/**,.env*,.qa/**,.git/**,**/*.pem,**/*.key,**/*service-account*.json,**/*service_account*.json}"
+      "excludeFiles": "{.snapshots/**,credentials/**,.env*,.qa/**,.git/**,**/*.pem,**/*.key,**/*service-account*.json,**/*service_account*.json}"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/snapshots",
+      "schedule": "0 12 * * *"
+    }
+  ]
 }

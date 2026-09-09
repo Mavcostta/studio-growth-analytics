@@ -1,3 +1,4 @@
+import { withoutLocalTraffic } from '../server/integrations/analytics/filters.js'
 import assert from 'node:assert/strict'
 import { buildSiteInsights } from '../src/utils/siteInsights.js'
 import type { GA4Report } from '../src/services/analytics/ga4.js'
@@ -455,21 +456,24 @@ test('GA4: configuração, relatórios reais sem fallback, precisão e erros san
     )
     assert.equal(calls[0].method, 'POST')
     assert.equal(calls[0].retry, false)
-    assert.deepEqual(calls[1].data, {
-      dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }],
-      dimensions: [{ name: 'eventName' }],
-      metrics: [{ name: 'eventCount' }],
-      dimensionFilter: {
-        filter: {
-          fieldName: 'eventName',
-          inListFilter: {
-            values: ['whatsapp_click', 'select_service', 'scroll_depth'],
-            caseSensitive: true,
+    assert.deepEqual(
+      calls[1].data,
+      withoutLocalTraffic({
+        dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }],
+        dimensions: [{ name: 'eventName' }],
+        metrics: [{ name: 'eventCount' }],
+        dimensionFilter: {
+          filter: {
+            fieldName: 'eventName',
+            inListFilter: {
+              values: ['whatsapp_click', 'select_service', 'scroll_depth'],
+              caseSensitive: true,
+            },
           },
         },
-      },
-      limit: 3,
-    })
+        limit: 3,
+      }),
+    )
     responses = [{}, {}]
     const empty = JSON.parse((await testAnalytics()).body)
     assert.equal(empty.status, 'empty')
