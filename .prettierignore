@@ -1,0 +1,10 @@
+node_modules
+dist
+.test-build
+.server-build
+package-lock.json
+*.tsbuildinfo
+.qa
+credentials
+.env
+.vercel

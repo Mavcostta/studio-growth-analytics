@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": ".test-build",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": [
+    "tests/**/*.ts",
+    "src/utils/**/*.ts",
+    "src/mocks/**/*.ts",
+    "src/types/**/*.ts"
+  ]
+}

@@ -1,0 +1,13 @@
+.env*
+credentials/
+tokens/
+*.pem
+*.key
+*service-account*.json
+*service_account*.json
+.qa/
+.git/
+.server-build/
+.test-build/
+node_modules/
+dist/
