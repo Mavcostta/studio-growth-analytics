@@ -3,6 +3,10 @@ import { testInstagram } from './integrations/instagram/index.js'
 import { getInstagramPosts } from './integrations/instagram/posts.js'
 import { testAnalytics } from './integrations/analytics/index.js'
 import { getInstagramAccount } from './integrations/instagram/account.js'
+import { functionHandler } from './function-handler.js'
+import { getHistory } from './history.js'
+
+const historyHandler = functionHandler(getHistory)
 
 export function createDevServer(enabled: boolean) {
   // ponytail: uma consulta por vez neste teste manual; fila por conta se virar serviço multiusuário.
@@ -23,6 +27,7 @@ export function createDevServer(enabled: boolean) {
         '/api/dev/instagram/posts',
         '/api/dev/instagram/account',
         '/api/dev/analytics/test',
+        '/api/history',
       ].includes(req.url ?? '')
     )
       return send(404, '{"error":"not_found"}')
@@ -37,6 +42,7 @@ export function createDevServer(enabled: boolean) {
       res.setHeader('Allow', 'GET')
       return send(405, '{"error":"method_not_allowed"}')
     }
+    if (req.url === '/api/history') return historyHandler(req, res)
     const analytics = req.url === '/api/dev/analytics/test'
     if (analytics ? analyticsBusy : busy)
       return send(429, '{"error":"test_in_progress"}')

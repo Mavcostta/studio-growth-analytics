@@ -8,6 +8,8 @@ import {
   InstagramSummary,
 } from '../../components/Instagram'
 import styles from '../../styles/dashboard.module.css'
+import { useHistory } from '../../hooks/useHistory'
+import { SnapshotHistory } from '../../components/SnapshotHistory'
 
 export default function Dashboard({
   analytics,
@@ -20,6 +22,7 @@ export default function Dashboard({
   instagram: InstagramState
   retry: () => void
 }) {
+  const history = useHistory()
   return (
     <>
       <div className={styles.welcome}>
@@ -29,6 +32,11 @@ export default function Dashboard({
           <p>Entenda o Instagram e acompanhe o que ainda falta conectar.</p>
         </div>
       </div>
+      <SnapshotHistory
+        source="instagram"
+        state={history.state}
+        retry={history.retry}
+      />
       <InstagramArea state={instagram} retry={retry}>
         {(real) => (
           <>
@@ -38,6 +46,11 @@ export default function Dashboard({
           </>
         )}
       </InstagramArea>
+      <SnapshotHistory
+        source="ga4"
+        state={history.state}
+        retry={history.retry}
+      />
       <Analytics state={analytics} retry={retryAnalytics} />
     </>
   )
