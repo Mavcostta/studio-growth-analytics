@@ -1247,3 +1247,108 @@
     height: 220px;
   }
 }
+.accountOverview {
+  margin: 24px 0 32px;
+}
+.accountHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.accountHeading h2 {
+  font-size: 24px;
+  color: #69465d;
+}
+.followersHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 28px;
+  border: 1px solid #e4cedd;
+  border-radius: 10px;
+  background: #f8eff5;
+  color: #69465d;
+  margin: 16px 0 28px;
+}
+.followersHero > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.followersValue {
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.followersComparison {
+  min-width: 0;
+}
+.followersComparison p {
+  font-size: 12px;
+  margin-top: 10px;
+  line-height: 1.6;
+}
+.accountChange {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: baseline;
+}
+.followersComparison .accountChange {
+  font-size: 18px;
+  font-weight: 600;
+}
+.accountMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.accountMetrics article {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.accountMetrics .metricLabel {
+  font-size: 13px;
+}
+.accountMetrics .metricComparison {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.accountOverview > details > summary {
+  font-size: 13px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.overviewDetails {
+  margin: 26px 0;
+}
+.overviewDetails > summary {
+  cursor: pointer;
+  font-size: 18px;
+  color: #69465d;
+  padding: 16px 0;
+}
+@media (max-width: 900px) {
+  .accountMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 540px) {
+  .followersHero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 22px;
+    gap: 16px;
+  }
+  .accountMetrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .accountHeading h2 {
+    font-size: 22px;
+  }
+}

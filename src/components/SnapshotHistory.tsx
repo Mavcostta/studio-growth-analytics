@@ -13,7 +13,8 @@ const number = (n: number | null | undefined) =>
     : n.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
 const date = (s: string) => s.slice(0, 10).split('-').reverse().join('/')
 const time = (s: string) =>
-  new Date(s).toLocaleString('pt-BR', { timeZone: 'UTC' }) + ' UTC'
+  new Date(s).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) +
+  ' (S?o Paulo)'
 const period = (p: Period | null) =>
   p
     ? `${date(p.start)} a ${date(p.end)} (${p.timezone}${p.start.includes('T') ? '; término exclusivo' : ''})`
@@ -217,7 +218,7 @@ export function SnapshotHistory({
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Coleta (UTC)</th>
+                    <th scope="col">Coleta (S?o Paulo)</th>
                     <th scope="col">Período</th>
                     {labels[source].map(([key, label]) => (
                       <th scope="col" key={key}>
