@@ -113,9 +113,16 @@ test('histórico: loading, erro, vazio, uma coleta, comparação e taxas sem red
         views: { difference: 0, percent: null, direction: 'stable' },
       },
     }
-    assert.match(overview(), /Aumento de 1/)
-    assert.match(overview(), /\+0,05/)
-    assert.match(overview(), /Estabilidade/)
+    assert.match(overview(), /aria-label="Aumento"/)
+    assert.match(
+      overview().replace(/<[^>]+>/g, ''),
+      /1 seguidor desde a última atualização/,
+    )
+    assert.match(overview(), /Sem mudança desde a última atualização/)
+    assert.doesNotMatch(
+      overview().replace(/<details[\s\S]*<\/details>/g, ''),
+      /%|07\/09\/2026/,
+    )
     assert.match(overview(), /07\/09\/2026, 09:00/)
     assert.doesNotMatch(overview(), /desde ontem/i)
     history.comparison.changes.followers_count = {
@@ -123,7 +130,7 @@ test('histórico: loading, erro, vazio, uma coleta, comparação e taxas sem red
       percent: null,
       direction: 'decrease',
     }
-    assert.match(overview(), /Queda de 1/)
+    assert.match(overview(), /aria-label="Queda"/)
     assert.doesNotMatch(overview(), /%/)
     history.status = 'partial'
     history.comparison = null
@@ -141,6 +148,113 @@ test('histórico: loading, erro, vazio, uma coleta, comparação e taxas sem red
         status === 'loading' ? /Carregando os dados/ : /role="alert"/,
       )
     }
+
+    const { SiteOverview } = await vite.ssrLoadModule(
+      '/src/components/SiteOverview.tsx',
+    )
+    const { pageName, sourceName, updatedLabel } = await vite.ssrLoadModule(
+      '/src/utils/presentation.ts',
+    )
+    assert.equal(
+      updatedLabel('2026-09-10T02:36:00Z', new Date('2026-09-10T02:59:00Z')),
+      'Atualizado hoje às 23:36',
+    )
+    assert.match(
+      updatedLabel('2026-09-10T02:36:00Z', new Date('2026-09-10T03:01:00Z')),
+      /09\/09\/2026/,
+    )
+    assert.equal(pageName('/index.html'), 'Página inicial')
+    assert.equal(pageName('/'), 'Página inicial')
+    assert.equal(
+      pageName('/extensao-cilios-guarulhos.html'),
+      'Extensão de cílios',
+    )
+    assert.equal(
+      pageName('/design-sobrancelhas-guarulhos.html'),
+      'Design de sobrancelhas',
+    )
+    assert.equal(pageName('/unknown?private'), 'Outra página')
+    assert.equal(sourceName('google / organic'), 'Google')
+    assert.equal(sourceName('ig / social'), 'Instagram')
+    assert.equal(sourceName('(direct) / (none)'), 'Acesso direto')
+    assert.equal(sourceName('unknown'), 'Outra origem')
+    history.points[0].metrics = {
+      activeUsers: 3,
+      sessions: 5,
+      screenPageViews: 10,
+      whatsapp_click: 8,
+    }
+    history.points[0].sources = [
+      {
+        label: 'ig / social',
+        denominator: 2,
+        clicks: 8,
+        rate: 400,
+        partial: false,
+      },
+    ]
+    history.points[0].pages = [
+      {
+        label: '/index.html',
+        denominator: 3,
+        clicks: 8,
+        rate: 266,
+        partial: false,
+      },
+      { label: '/', denominator: 7, clicks: null, rate: null, partial: false },
+    ]
+    const site = () =>
+      renderToStaticMarkup(
+        createElement(SiteOverview, { state, retry: () => {} }),
+      )
+    const visible = site().replace(/<details[\s\S]*<\/details>/g, '')
+    assert.match(visible, /Seu site/)
+    assert.match(visible, /De onde vieram seus visitantes/)
+    assert.match(visible, /O que as pessoas mais visitaram/)
+    assert.match(visible, /Interesse em agendar/)
+    assert.match(visible, /acessos ao WhatsApp/)
+    assert.equal((visible.match(/Página inicial/g) ?? []).length, 2)
+    assert.match(visible, /Instagram/)
+    assert.doesNotMatch(
+      visible.replace(/<[^>]+>/g, ''),
+      /GA4|source|medium|ig \/ social|index.html|whatsapp_click|amostra pequena|%|taxa de clique/i,
+    )
+    history.points[0].metrics.whatsapp_click = null
+    assert.match(site(), /Indisponível/)
+    history.points[0].metrics.whatsapp_click = 0
+    assert.match(site(), />0<\/strong>/)
+    const { default: Dashboard } = await vite.ssrLoadModule(
+      '/src/pages/Dashboard/index.tsx',
+    )
+    const dashboard = renderToStaticMarkup(
+      createElement(Dashboard, {
+        analytics: { status: 'loading' },
+        retryAnalytics: () => {},
+        instagram: { status: 'error', message: 'POSTS_DETAIL_ONLY' },
+        retry: () => {},
+      }),
+    )
+    let detailDepth = 0
+    const primaryText = dashboard
+      .split(/(<[^>]+>)/)
+      .filter((part) => {
+        if (/^<details\b/.test(part)) {
+          detailDepth++
+          return false
+        }
+        if (/^<\/details>/.test(part)) {
+          detailDepth--
+          return false
+        }
+        return detailDepth === 0 && !part.startsWith('<')
+      })
+      .join(' ')
+    assert.equal((primaryText.match(/Seu Instagram hoje/g) ?? []).length, 1)
+    assert.equal((primaryText.match(/Seu site/g) ?? []).length, 1)
+    assert.doesNotMatch(
+      primaryText,
+      /POSTS_DETAIL_ONLY|Google Analytics|Histórico do site|Posts analisados/,
+    )
   } finally {
     await vite.close()
   }

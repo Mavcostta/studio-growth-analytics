@@ -1352,3 +1352,14 @@
     font-size: 22px;
   }
 }
+.businessLists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) {
+  .businessLists {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

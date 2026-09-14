@@ -1,5 +1,6 @@
 import type { Change, Period, SourceHistory } from '../../server/history-model'
 import type { HistoryState } from '../hooks/useHistory'
+import { updatedLabel } from '../utils/presentation'
 import styles from '../styles/dashboard.module.css'
 
 const formatNumber = (value: number | null | undefined) =>
@@ -25,42 +26,28 @@ const metrics = [
   ['profile_links_taps', 'Toques em links'],
 ] as const
 
-function Comparison({ change }: { change?: Change }) {
+function Comparison({
+  change,
+  followers = false,
+}: {
+  change?: Change
+  followers?: boolean
+}) {
   if (!change || change.difference === null || change.direction === null)
-    return <span>Sem comparação disponível</span>
-  const label =
-    change.direction === 'increase'
-      ? 'Aumento'
-      : change.direction === 'decrease'
-        ? 'Queda'
-        : 'Estabilidade'
-  const arrow =
-    change.direction === 'increase'
-      ? '↑'
-      : change.direction === 'decrease'
-        ? '↓'
-        : '→'
-  const percentage = change.percent
+    return <span>Histórico sendo construído</span>
+  if (change.direction === 'stable')
+    return <span>Sem mudança desde a última atualização</span>
+  const up = change.direction === 'increase'
   return (
     <span className={styles.accountChange}>
-      <span>
-        <span aria-hidden="true">{arrow} </span>
-        {label}
-        {change.difference !== 0
-          ? ` de ${formatNumber(Math.abs(change.difference))}`
-          : ''}
-      </span>
-      {percentage !== null && Number.isFinite(percentage) && (
-        <span>
-          {percentage > 0 ? '+' : percentage < 0 ? '−' : ''}
-          {Math.abs(percentage) > 0 && Math.abs(percentage) < 0.01
-            ? '<0,01'
-            : Math.abs(percentage).toLocaleString('pt-BR', {
-                maximumFractionDigits: 2,
-              })}
-          %
-        </span>
-      )}
+      <span aria-label={up ? 'Aumento' : 'Queda'}>{up ? '↑' : '↓'}</span>{' '}
+      {formatNumber(Math.abs(change.difference))}
+      {followers
+        ? Math.abs(change.difference) === 1
+          ? ' seguidor'
+          : ' seguidores'
+        : ''}{' '}
+      desde a última atualização
     </span>
   )
 }
@@ -71,9 +58,7 @@ function AccountData({ history }: { history: SourceHistory }) {
   const comparison = history.comparison
   return (
     <>
-      <p className={styles.periodNote}>
-        Atualizado em {localTime(current.collectedAt)} · horário de São Paulo.
-      </p>
+      <p className={styles.periodNote}>{updatedLabel(current.collectedAt)}</p>
       <article
         className={styles.followersHero}
         aria-label="Resumo de seguidores"
@@ -88,11 +73,10 @@ function AccountData({ history }: { history: SourceHistory }) {
         <div className={styles.followersComparison}>
           {current.metrics.followers_count != null && comparison ? (
             <>
-              <Comparison change={comparison.changes.followers_count} />
-              <p>
-                De {localTime(comparison.previous)} a{' '}
-                {localTime(comparison.current)}
-              </p>
+              <Comparison
+                change={comparison.changes.followers_count}
+                followers
+              />
             </>
           ) : (
             <p>Histórico sendo construído</p>
@@ -102,16 +86,8 @@ function AccountData({ history }: { history: SourceHistory }) {
       <div className={styles.sectionHeading}>
         <div>
           <h3>Desempenho recente</h3>
-          <p className={styles.periodNote}>
-            Sua conta de {periodLabel(current.period)}.
-          </p>
         </div>
       </div>
-      {comparison && (
-        <p className={styles.periodNote}>
-          Comparação com {periodLabel(comparison.previousPeriod)}.
-        </p>
-      )}
       <div className={styles.accountMetrics}>
         {metrics.map(([key, label]) => (
           <article className={styles.metricCard} key={key}>
@@ -119,20 +95,32 @@ function AccountData({ history }: { history: SourceHistory }) {
             <strong className={styles.metricValue}>
               {formatNumber(current.metrics[key])}
             </strong>
-            <p className={styles.metricComparison}>
-              {current.metrics[key] == null ? (
-                'Dado ainda não disponível'
-              ) : comparison ? (
-                <Comparison change={comparison.changes[key]} />
-              ) : (
-                'Histórico sendo construído'
+            {current.metrics[key] != null &&
+              comparison?.changes[key]?.difference != null && (
+                <p className={styles.metricComparison}>
+                  <Comparison change={comparison.changes[key]} />
+                </p>
               )}
-            </p>
           </article>
         ))}
       </div>
       <details className={styles.dataDetails}>
         <summary>Sobre estes dados</summary>
+        {comparison && (
+          <p>
+            Comparação de seguidores: {localTime(comparison.previous)} a{' '}
+            {localTime(comparison.current)}. Período anterior das demais
+            métricas: {periodLabel(comparison.previousPeriod)}. Variação
+            percentual de seguidores:{' '}
+            {comparison.changes.followers_count?.percent == null
+              ? 'Indisponível'
+              : comparison.changes.followers_count.percent.toLocaleString(
+                  'pt-BR',
+                  { maximumFractionDigits: 2 },
+                ) + '%'}
+            .
+          </p>
+        )}
         <p>
           {history.points.length} snapshots disponíveis. Horários convertidos
           para São Paulo. Os seguidores representam o total na última coleta,

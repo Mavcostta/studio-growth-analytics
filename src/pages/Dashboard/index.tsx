@@ -9,6 +9,7 @@ import {
 import styles from '../../styles/dashboard.module.css'
 import { useHistory } from '../../hooks/useHistory'
 import { SnapshotHistory } from '../../components/SnapshotHistory'
+import { SiteOverview } from '../../components/SiteOverview'
 import { InstagramOverview } from '../../components/InstagramOverview'
 
 export default function Dashboard({
@@ -35,38 +36,27 @@ export default function Dashboard({
         </div>
       </div>
       <InstagramOverview state={history.state} retry={history.retry} />
-      <div className={styles.sectionHeading}>
-        <div>
-          <h2>Conteúdo</h2>
-          <p className={styles.periodNote}>
-            Resultados das publicações recentes, separados dos números da conta.
-          </p>
-        </div>
-      </div>
-      <InstagramArea state={instagram} retry={retry}>
-        {(real) => (
-          <>
-            <InstagramHighlights posts={real.posts} />
-            <details className={styles.dataDetails}>
-              <summary>
-                Ver métricas das {real.posts.length} publicações analisadas
-              </summary>
-              <InstagramSummary posts={real.posts} />
-            </details>
-          </>
-        )}
-      </InstagramArea>
-      <details className={styles.overviewDetails}>
-        <summary>Site e cliques no WhatsApp</summary>
+      <SiteOverview state={history.state} retry={history.retry}>
         <SnapshotHistory
           source="ga4"
           state={history.state}
           retry={history.retry}
         />
         <Analytics state={analytics} retry={retryAnalytics} />
+      </SiteOverview>
+      <details className={styles.overviewDetails}>
+        <summary>Sobre estes dados · conteúdo do Instagram</summary>
+        <InstagramArea state={instagram} retry={retry}>
+          {(real) => (
+            <>
+              <InstagramHighlights posts={real.posts} />
+              <InstagramSummary posts={real.posts} />
+            </>
+          )}
+        </InstagramArea>
       </details>
       <section className={styles.panel}>
-        <h2>Próximos passos</h2>
+        <h2>O que fazer agora</h2>
         <p className={styles.footnote}>
           Estamos construindo seu histórico. Futuramente, esta área ajudará a
           identificar oportunidades para o Studio.
